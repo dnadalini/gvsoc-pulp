@@ -16,24 +16,23 @@
 
 import gvsoc.systree
 import cpu.iss.riscv
-from pulp.chips.archytas.archytas_isa import *
-from cpu.iss.isa_gen.isa_smallfloats import *
+from pulp.chips.magia_base.magia_isa import *
 
-# RV32 core with X-if
+# Basic rv32 core
 class CV32CoreTest(cpu.iss.riscv.RiscvCommon):
     def __init__(self, parent: gvsoc.systree.Component, name: str, binaries: list=[],
                  fetch_enable: bool=False, boot_addr: int=0, timed: bool=True,
                  core_id: int=0):
 
         # Properties
-        isa_str = 'rv32imafc'
+        isa_str = 'rv32imac'
         misa = 0x40000000
         debug_handler = 0x1a190800
         fetch_enable = False
         riscv_exceptions = True
 
         # Instantiates the ISA from the string.
-        isa = cpu.iss.isa_gen.isa_riscv_gen.RiscvIsa('cv32-base', isa_str, extensions=[iDMA_Ctrl(), Rv32redmule(), FSync(), Xf16alt(), Xf16()])
+        isa = cpu.iss.isa_gen.isa_riscv_gen.RiscvIsa('cv32-base', isa_str, extensions=[Xdma(), Rv32redmule(), FSync()])
 
         super().__init__(parent, name, isa=isa, misa=misa, core_id=core_id,
                          debug_handler=debug_handler, fetch_enable=fetch_enable,
