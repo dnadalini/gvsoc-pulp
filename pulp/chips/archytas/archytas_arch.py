@@ -14,12 +14,6 @@
 # limitations under the License.
 #
 
-#
-# Segments mapping
-# L1: Stack, Scratchpad
-# L2: Data, Text
-#
-# TODO: for early tests only. Move to json later
 class ArchytasArch:
     # Single tile address map from magia_tile_pkg.sv
     RESERVED_ADDR_START = 0x0000_0000
@@ -47,6 +41,6 @@ class ArchytasArch:
     TILE_CLK_FREQ       = 50 * (10 ** 6)
 
     ENABLE_NOC          = False
-    N_TILES_X           = 2
-    N_TILES_Y           = 2
+    N_TILES_X           = 1 # 16
+    N_TILES_Y           = 1 # 16
     NB_CLUSTERS         = N_TILES_X*N_TILES_Y
