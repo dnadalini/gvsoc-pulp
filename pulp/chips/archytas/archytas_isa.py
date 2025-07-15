@@ -1,9 +1,5 @@
 #
-<<<<<<< HEAD
-# Copyright (C) 2020 ETH Zurich and University of Bologna
-=======
 # Copyright (C) 2025 ETH Zurich, University of Bologna and Fondazione ChipsIT
->>>>>>> b2258dd (Add first pieces of code for the DEMOCRITOS T Tile)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,3 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from cpu.iss.isa_gen.isa_gen import *
+from cpu.iss.isa_gen.isa_riscv_gen import *
+
+class Xdma(IsaSubset):
+
+    def __init__(self):
+        super().__init__(name='Xdma', instrs=[
+
+            Instr('dmsrc',     Format_R  ,   '0000000 ----- ----- 000 00000 0101011'),
+            Instr('dmdst',     Format_R  ,   '0000001 ----- ----- 000 00000 0101011'),
+            Instr('dmstr',     Format_R  ,   '0000110 ----- ----- 000 00000 0101011'),
+            Instr('dmrep',     Format_R  ,   '0000111 ----- ----- 000 00000 0101011'),
+            Instr('dmcpy',     Format_R  ,   '0000011 ----- ----- 000 ----- 0101011'),
+            Instr('dmstat',    Format_R  ,   '0000101 ----- ----- 000 ----- 0101011'),
+            Instr('dmcpyi',    Format_I1U,   '0000010 ----- ----- 000 ----- 0101011'),
+            Instr('dmstati',   Format_I1U,   '0000100 ----- ----- 000 ----- 0101011'),
+        ])
+
+class FSync(IsaSubset):
+
+    def __init__(self):
+        super().__init__(name='fractal_sync', instrs=[
+            Instr('fsync',    Format_R     ,'0000000 ----- ----- 010 00000 1011011'),
+        ])
