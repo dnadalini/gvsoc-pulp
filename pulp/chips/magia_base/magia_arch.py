@@ -25,6 +25,6 @@ class MagiaArch:
     TILE_CLK_FREQ       = 50 * (10 ** 6)
 
     ENABLE_NOC          = False
-    N_TILES_X           = 2 # 16
-    N_TILES_Y           = 2 # 16
+    N_TILES_X           = 16
+    N_TILES_Y           = 16
     NB_CLUSTERS         = N_TILES_X*N_TILES_Y
