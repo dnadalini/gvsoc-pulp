@@ -7,11 +7,11 @@ set(REDMULE_SRCS
     )
 
 vp_model(
-	NAME pulp.redmule.redmule
+	NAME pulp.redmule_hw_accurate.redmule
 	SOURCES ${REDMULE_SRCS}
         )
 
 vp_model_include_directories(
-    NAME pulp.redmule.redmule
+    NAME pulp.redmule_hw_accurate.redmule
     DIRECTORY "include"
     )

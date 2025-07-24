@@ -1,4 +1,4 @@
-import gsystree as st
+import gvsoc.systree as st
 
 class RedMule(st.Component):
 
@@ -6,4 +6,4 @@ class RedMule(st.Component):
 
         super(RedMule, self).__init__(parent, name)
 
-        self.set_component('pulp.redmule.redmule')
+        self.set_component('pulp.redmule_hw_accurate.redmule')
