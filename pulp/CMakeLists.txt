@@ -1,3 +1,4 @@
+add_subdirectory(redmule_hw_accurate)
 add_subdirectory(adv_dbg_unit)
 add_subdirectory(cluster)
 add_subdirectory(padframe)
