@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <memory.h>
 
-RedMule::RedMule(js::config *config) : vp::component(config) {
+// TODO: verify why Andrea uses a js::Config, which is never used elsewhere
+RedMule::RedMule(js::Config *config) : vp::Component(config) {
+// RedMule::RedMule(vp::ComponentConf &config) : vp::Component(config) {
 
 }
 
@@ -14,7 +16,8 @@ void RedMule::reset(bool active) {
 	}
 }
 
-vp::io_req_status_e RedMule::hwpe_slave(void *__this, vp::io_req *req) {
+// vp::IoReqStatus RedMule::hwpe_slave(void *__this, vp::IoReq *req)
+vp::IoReqStatus RedMule::hwpe_slave(vp::Block* __this, vp::IoReq *req) {
     RedMule *_this = (RedMule *)__this;
 	uint32_t address = req->get_addr();
 
@@ -97,6 +100,13 @@ int RedMule::build() {
 	return 0;
 }
 
-extern "C" vp::component *vp_constructor(js::config *config) {
+
+// TODO: verify why Andrea uses a js::Config, which is never used elsewhere
+// extern "C" vp::Component *gv_new(vp::ComponentConf &config)
+// {
+//     return new RedMule(config);
+// }
+
+extern "C" vp::Component *vp_constructor(js::Config *config) {
     return new RedMule(config);
 }

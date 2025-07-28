@@ -1,4 +1,5 @@
 #include <redmule.hpp>
+#include <config.h>
 
 #include <stdio.h>
 
