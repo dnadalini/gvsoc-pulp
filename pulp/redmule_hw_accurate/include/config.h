@@ -1,7 +1,9 @@
+#pragma once
 #include "archi_redmule.h"
 
 #define SRC_FMT FP16
-typedef _Float16 src_fmt_t;
+// typedef _Float16 src_fmt_t;
+typedef int16_t src_fmt_t;
 
 #define DST_FMT FP32
 typedef float dst_fmt_t;
