@@ -9,7 +9,6 @@ RedMule::RedMule(vp::ComponentConf &config) : vp::Component(config) {
 	this->new_master_port("out", &this->out);
 
 	this->new_master_port("irq", &this->irq);
-
 	this->in.set_req_meth(&RedMule::hwpe_slave);
     this->new_slave_port("input", &this->in);
 
