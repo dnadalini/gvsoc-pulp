@@ -26,7 +26,7 @@ from pulp.cluster.cluster_control_v2 import Cluster_control
 from pulp.ne16.ne16 import Ne16
 from pulp.icache_ctrl.icache_ctrl_v2 import Icache_ctrl
 
-from pulp.redmule_hw_accurate.redmule import RedMule
+from pulp.redmule.redmule import RedMule
 
 def get_cluster_name(cid: int):
     """

@@ -1,3 +1,4 @@
+#pragma once
 #include "archi_redmule.h"
 
 #define SRC_FMT FP16
