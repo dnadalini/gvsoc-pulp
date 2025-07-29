@@ -134,7 +134,7 @@ class RedMule : public vp::Component {
     	// RedMule(js::Config *config);
 		RedMule(vp::ComponentConf &config);
 		
-		int build();
+		//int build();
 		void reset(bool active);
 		
 		vp::IoSlave in;
