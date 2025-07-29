@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
  * Copyright (C) 2024 ETH Zurich, University of Bologna, and Fondazione Chips-IT
-=======
- * Copyright (C) 2024 ETH Zurich and University of Bologna
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
