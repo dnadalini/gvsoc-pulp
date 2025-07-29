@@ -4,11 +4,7 @@
 
 #define JMP ARRAY_HEIGHT * (PIPE_REGS + 1) * sizeof(src_fmt_t)
 
-<<<<<<< HEAD
 void RedMule::fsm_start_handler(vp::Block *__this, vp::ClockEvent *event) {
-=======
-void RedMule::fsm_start_handler(void *__this, vp::clock_event *event) {
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
     RedMule* _this = (RedMule *) __this;
 
     _this->trace.msg("Starting op...\n");

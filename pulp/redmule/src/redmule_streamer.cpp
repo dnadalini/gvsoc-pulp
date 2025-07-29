@@ -4,11 +4,6 @@
 
 RedMule_Streamer::RedMule_Streamer(RedMule* redmule, bool is_write) {
     this->redmule = redmule;
-<<<<<<< HEAD
-
-=======
-	
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
 	this->base_addr = 0;
 	this->tot_len   = 0;
 	this->d0_len    = 0;
@@ -40,11 +35,7 @@ void RedMule_Streamer::configure(
 	uint32_t 	d1_stride 	,
 	uint32_t	d2_len		,
 	uint32_t 	d2_stride	,
-<<<<<<< HEAD
 	uint32_t	d3_stride
-=======
-	uint32_t	d3_stride	
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
 ) {
 	this->base_addr = base_addr	;
 	this->tot_len   = tot_len  	;
@@ -106,11 +97,8 @@ int RedMule_Streamer::rw_data(int width, void* buf, strobe_t strb) {
 				this->req->set_size(BYTES_PER_BANK);
 			}
 
-<<<<<<< HEAD
+
 			vp::IoReqStatus err = this->redmule->out.req(this->req);
-=======
-			vp::io_req_status_e err = this->redmule->out.req(this->req);
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
 
 			if (err != vp::IO_REQ_OK) {
 				this->redmule->trace.fatal("There was an error while reading/writing data\n");
@@ -119,11 +107,7 @@ int RedMule_Streamer::rw_data(int width, void* buf, strobe_t strb) {
 
 			latency = req->get_latency();
 
-<<<<<<< HEAD
 			if (!this->is_write) {
-=======
-			if (!this->is_write) { 
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
 				for (int i = 0; i < BYTES_PER_BANK - (offs % BYTES_PER_BANK); i++) {
 					if (strb & 0x1) {
 						* (((uint8_t *) buf) + i) = * (((uint8_t *) &tmp) + i + (offs % BYTES_PER_BANK));
@@ -132,11 +116,6 @@ int RedMule_Streamer::rw_data(int width, void* buf, strobe_t strb) {
 					strb = strb >> 1;
 				}
 			}
-<<<<<<< HEAD
-
-=======
-		
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
 			max_latency = latency > max_latency ? latency : max_latency;
 		}
 
@@ -151,11 +130,8 @@ int RedMule_Streamer::rw_data(int width, void* buf, strobe_t strb) {
 					this->req->set_data(((uint8_t *) buf) + i);
 					this->req->set_size(BYTES_PER_BANK);
 
-<<<<<<< HEAD
+
 					vp::IoReqStatus err = this->redmule->out.req(this->req);
-=======
-					vp::io_req_status_e err = this->redmule->out.req(this->req);
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
 
 					if (err != vp::IO_REQ_OK) {
 						this->redmule->trace.fatal("There was an error while reading/writing data\n");
@@ -180,11 +156,7 @@ int RedMule_Streamer::rw_data(int width, void* buf, strobe_t strb) {
 						this->req->set_size(BYTES_PER_BANK);
 					}
 
-<<<<<<< HEAD
 					vp::IoReqStatus err = this->redmule->out.req(this->req);
-=======
-					vp::io_req_status_e err = this->redmule->out.req(this->req);
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
 
 					if (err != vp::IO_REQ_OK) {
 						this->redmule->trace.fatal("There was an error while reading/writing data\n");
@@ -217,11 +189,8 @@ int RedMule_Streamer::rw_data(int width, void* buf, strobe_t strb) {
 				}
 
 				if (req->get_size() != 0) {
-<<<<<<< HEAD
+
 					vp::IoReqStatus err = this->redmule->out.req(this->req);
-=======
-					vp::io_req_status_e err = this->redmule->out.req(this->req);
->>>>>>> 0287b67 (added Belano's redmule version in WIP. Added IRQ to RedMule_Light. Fixed RedMulE_Light ISA and opcodes)
 
 					if (err != vp::IO_REQ_OK) {
 						this->redmule->trace.fatal("There was an error while reading/writing data\n");
