@@ -819,6 +819,26 @@ uint32_t LightRedmule::op_foramt_parser(uint32_t op_format) {
     return compute_able;
 }
 
+uint32_t LightRedmule::op_foramt_parser(uint32_t op_format) {
+    uint32_t data_format=op_format&0x7;
+    uint32_t operation=(op_format>>3)&0x7;
+    uint32_t compute_able=0;
+    //only GeMM is supported for now
+    //expected compute_able=1 --> matmul_uint16
+    //expected compute_able=2 --> matmul_int16
+    //expected compute_able=3 --> matmul_fp16
+    //expected compute_able=5 --> matmul_uint8
+    //expected compute_able=6 --> matmul_int8
+    //expected compute_able=7 --> matmul_fp8e4m3
+    if ((operation==1) && (data_format==1))
+        compute_able=3;
+    else if ((operation==1) && (data_format==0))
+        compute_able=7;
+    else 
+        this->trace.fatal("[LightRedmule] Selected wrong operation/format combination [op_format=%d-data_format=%d-operation=%d]",op_format,data_format,operation);
+    return compute_able;
+}
+
 void LightRedmule::offload_sync(vp::Block *__this, IssOffloadInsn<uint32_t> *insn)
 {
     LightRedmule *_this = (LightRedmule *)__this;
