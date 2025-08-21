@@ -1194,7 +1194,7 @@ void LightRedmule::fsm_handler(vp::Block *__this, vp::ClockEvent *event)
 
     switch (_this->state.get()) {
         case IDLE:
-            //_this->done.sync(false); //clear irq
+            _this->done.sync(false); //clear irq
             break;
 
         case PRELOAD: {
