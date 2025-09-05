@@ -278,6 +278,7 @@ void IDmaBeAxi::write_data(IdmaTransfer *transfer, uint8_t *data, uint64_t size)
     req->set_addr(base);
     req->set_size(size);
     req->set_data(data);
+    req->arg_alloc(); //ZL-MOD 22082025 fix for Floonoc
     *req->arg_get(0) = (void *)transfer;
 
     vp::IoReqStatus status = this->ico_itf.req(req);
