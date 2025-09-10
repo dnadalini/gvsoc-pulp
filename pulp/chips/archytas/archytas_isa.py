@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2025 ETH Zurich, University of Bologna and Fondazione ChipsIT
+# Copyright (C) 2020 ETH Zurich and University of Bologna
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,19 +17,51 @@
 from cpu.iss.isa_gen.isa_gen import *
 from cpu.iss.isa_gen.isa_riscv_gen import *
 
-class Xdma(IsaSubset):
+
+# class Xdma(IsaSubset):
+
+#     def __init__(self):
+#         super().__init__(name='Xdma', instrs=[
+
+#             Instr('dmsrc',     Format_R  ,   '0000000 ----- ----- 000 00000 0101011'),
+#             Instr('dmdst',     Format_R  ,   '0000001 ----- ----- 000 00000 0101011'),
+#             Instr('dmstr',     Format_R  ,   '0000110 ----- ----- 000 00000 0101011'),
+#             Instr('dmrep',     Format_R  ,   '0000111 ----- ----- 000 00000 0101011'),
+#             Instr('dmcpy',     Format_R  ,   '0000011 ----- ----- 000 ----- 0101011'),
+#             Instr('dmstat',    Format_R  ,   '0000101 ----- ----- 000 ----- 0101011'),
+#             Instr('dmcpyi',    Format_I1U,   '0000010 ----- ----- 000 ----- 0101011'),
+#             Instr('dmstati',   Format_I1U,   '0000100 ----- ----- 000 ----- 0101011'),
+#         ])
+
+Format_DMADATA = [
+    InReg (0, Range(15, 5)),
+    InReg (1, Range(20, 5)),
+    InReg (2, Range(27, 5)),
+]
+
+class iDMA_Ctrl(IsaSubset):
 
     def __init__(self):
-        super().__init__(name='Xdma', instrs=[
+        super().__init__(name='iDMA_Ctrl', instrs=[
 
-            Instr('dmsrc',     Format_R  ,   '0000000 ----- ----- 000 00000 0101011'),
-            Instr('dmdst',     Format_R  ,   '0000001 ----- ----- 000 00000 0101011'),
-            Instr('dmstr',     Format_R  ,   '0000110 ----- ----- 000 00000 0101011'),
-            Instr('dmrep',     Format_R  ,   '0000111 ----- ----- 000 00000 0101011'),
-            Instr('dmcpy',     Format_R  ,   '0000011 ----- ----- 000 ----- 0101011'),
-            Instr('dmstat',    Format_R  ,   '0000101 ----- ----- 000 ----- 0101011'),
-            Instr('dmcpyi',    Format_I1U,   '0000010 ----- ----- 000 ----- 0101011'),
-            Instr('dmstati',   Format_I1U,   '0000100 ----- ----- 000 ----- 0101011'),
+            Instr('dmcnf',        Format_Z,         '000011- 00000 00000 000 00000 1011011'),
+            Instr('dm1d2d3d',     Format_DMADATA,   '-----0- ----- ----- 0-- 00000 1111011'),
+            Instr('dmstr',        Format_Z,         '000000- 00000 00000 111 00000 1111011'),
+        ])
+
+Format_MARITH = [
+    InReg (0, Range(15, 5)),
+    InReg (1, Range(20, 5)),
+    InReg (2, Range(27, 5)),
+    UnsignedImm(0, Range(7, 8)),
+]
+
+class Rv32redmule(IsaSubset):
+
+    def __init__(self):
+        super().__init__(name='redmule', instrs=[
+            Instr('mcnfig',    Format_R     ,'0000000 ----- ----- 000 00000 0001011'),
+            Instr('marith',    Format_MARITH,'-----00 ----- ----- --- ----- 0101011'),
         ])
 
 class FSync(IsaSubset):
