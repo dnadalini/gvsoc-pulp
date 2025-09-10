@@ -40,7 +40,7 @@ class ArchytasArch:
     BYTES_PER_WORD      = 4
     TILE_CLK_FREQ       = 50 * (10 ** 6)
 
-    ENABLE_NOC          = False
-    N_TILES_X           = 1 # 16
-    N_TILES_Y           = 1 # 16
+    ENABLE_NOC          = True
+    N_TILES_X           = 2 # 16
+    N_TILES_Y           = 2 # 16
     NB_CLUSTERS         = N_TILES_X*N_TILES_Y
