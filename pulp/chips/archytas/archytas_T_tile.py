@@ -29,7 +29,7 @@ from pulp.chips.archytas.hierarchical_cache import Hierarchical_cache
 from pulp.chips.archytas.archytas_arch import ArchytasArch
 from pulp.chips.archytas.archytas_core import CV32CoreTest
 # TODO: integrate Andrea Belano's redmule instead of LightRedmule
-#from pulp.redmule.redmule import RedMule
+from pulp.redmule.redmule import RedMule
 # TODO: make a switchable version with the two RedMule versions
 from pulp.light_redmule.light_redmule import LightRedmule
 from pulp.idma.snitch_dma import SnitchDma
@@ -55,7 +55,7 @@ class Archytas_T_TileTcdm(gvsoc.systree.Component):
         dma_masters = 1
         dma_interleaver = DmaInterleaver(self, 'dma_interleaver', nb_master_ports=dma_masters, nb_banks=nb_banks, bank_width=4)
         
-        # TODO: checkme (need to work with TCDM-mapped RedMule)
+        # TODO: checkme (need to work with TCDM-mapped RedMule) -> should be ok to connect to memory
         # 1 master: redmule
         redmule_masters = 1
         redmule_interleaver = HWPEInterleaver(self, 'redmule_interleaver', nb_master_ports=redmule_masters, nb_banks=nb_banks, bank_width=4)
@@ -78,7 +78,7 @@ class Archytas_T_TileTcdm(gvsoc.systree.Component):
         for i in range(dma_masters):
             self.bind(self, f'IDMA_input', dma_interleaver, f'input')
 
-        # TODO: checkme
+        # TODO: checkme -> should be ok to connect to memory
         for i in range(redmule_masters):
             self.bind(self, f'RedMulE_input', redmule_interleaver, f'input')
 
@@ -91,6 +91,10 @@ class Archytas_T_TileTcdm(gvsoc.systree.Component):
     
     def i_REDMULE_INPUT(self) -> gvsoc.systree.SlaveItf:
         return gvsoc.systree.SlaveItf(self, f'RedMulE_input', signature='io')
+    
+    # TODO: should I add an output port to connect Andrea's Redmule's input to HWPE? 
+    def o_REDMULE_OUTPUT(self, itf: gvsoc.systree.SlaveItf):
+        self.itf_bind(f'RedMulE_input', itf, signature='io')
 
 
 class Archytas_T_Tile(gvsoc.systree.Component):
@@ -119,17 +123,17 @@ class Archytas_T_Tile(gvsoc.systree.Component):
 
         # TODO: make a switchable version of RedMule or just replace me with the other RedMule
         # Redmule
-        redmule = LightRedmule(self, f'tile-{tid}-redmule',
-                                    tcdm_bank_width     = ArchytasArch.BYTES_PER_WORD,
-                                    tcdm_bank_number    = ArchytasArch.N_MEM_BANKS,
-                                    elem_size           = 2, #max number of bytes per element --> if FP16 then elem_size=2. This is the max number to accomodate any supported format which for now are 8bits and 16bits data types 
-                                    ce_height           = 128,
-                                    ce_width            = 32,
-                                    ce_pipe             = 3,
-                                    queue_depth         = 1,
-                                    loc_base            = tid*ArchytasArch.L1_TILE_OFFSET)
-        
-        #new_rm=RedMule(self, 'new_redmule')
+        # redmule = LightRedmule(self, f'tile-{tid}-redmule',
+        #                             tcdm_bank_width     = ArchytasArch.BYTES_PER_WORD,
+        #                             tcdm_bank_number    = ArchytasArch.N_MEM_BANKS,
+        #                             elem_size           = 2, #max number of bytes per element --> if FP16 then elem_size=2. This is the max number to accomodate any supported format which for now are 8bits and 16bits data types 
+        #                             ce_height           = 128,
+        #                             ce_width            = 32,
+        #                             ce_pipe             = 3,
+        #                             queue_depth         = 1,
+        #                             loc_base            = tid*ArchytasArch.L1_TILE_OFFSET)
+        # New RedMule defined here (and then to be used with the 3-ports interface of PULP cluster)
+        redmule = RedMule(self, 'redmule')
         
         # Xif decoder
         xifdec = XifDecoder(self,f'tile-{tid}-xifdec')
@@ -235,11 +239,15 @@ class Archytas_T_Tile(gvsoc.systree.Component):
         idma1.o_OFFLOAD_GRANT(idma_ctrl.i_OFFLOAD_GRANT_iDMA1_OBI2AXI())
 
         # TODO: change me according to the other RedMule version
-        # Bind: redmule
-        redmule.o_TCDM(l1_tcdm.i_REDMULE_INPUT())
-        xifdec.o_OFFLOAD_S2(redmule.i_OFFLOAD())
-        redmule.o_OFFLOAD_GRANT(xifdec.i_OFFLOAD_GRANT_S2())
+        # # Bind: redmule
+        # redmule.o_TCDM(l1_tcdm.i_REDMULE_INPUT())
+        # xifdec.o_OFFLOAD_S2(redmule.i_OFFLOAD())
+        # redmule.o_OFFLOAD_GRANT(xifdec.i_OFFLOAD_GRANT_S2())
+        # redmule.o_IRQ(core_cv32.i_IRQ(31))
+        # Andrea's RedMule
+        redmule.o_OUTPUT(l1_tcdm.i_REDMULE_INPUT())
         redmule.o_IRQ(core_cv32.i_IRQ(31))
+        redmule.i_INPUT(l1_tcdm.o_REDMULE_OUTPUT()) # TODO: checkme!! Is this the way?
 
         # Bind fractal sync ports
         xifdec.o_XIF_2_FRACTAL_EAST_WEST(self.__o_SLAVE_EAST_WEST_FRACTAL())
