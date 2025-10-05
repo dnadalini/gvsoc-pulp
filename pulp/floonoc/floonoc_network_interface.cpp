@@ -304,6 +304,33 @@ void NetworkInterface::narrow_grant(vp::Block *__this, vp::IoReq *req)
     _this->grant(req);
 }
 
+void NetworkInterface::set_router(int nw, Router *router)
+{
+    this->router[nw] = router;
+    switch (nw)
+    {
+        case NW_REQ: this->req_queue.router = router;
+        case NW_RSP: this->rsp_queue.router = router;
+        case NW_WIDE: this->wide_queue.router = router;
+    }
+}
+
+// This gets called when a request was pending and the response is received
+void NetworkInterface::response(vp::Block *__this, vp::IoReq *req)
+{
+    NetworkInterface *_this = (NetworkInterface *)__this;
+    _this->handle_response(req);
+}
+
+
+
+// This gets called after a request sent to a target was denied, and it is now granted
+void NetworkInterface::grant(vp::Block *__this, vp::IoReq *req)
+{
+    NetworkInterface *_this = (NetworkInterface *)__this;
+    _this->grant(req);
+}
+
 void NetworkInterface::reset(bool active)
 {
     this->trace.msg(vp::Trace::LEVEL_TRACE, "Resetting network interface\n");
