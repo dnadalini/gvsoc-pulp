@@ -316,16 +316,28 @@ void NetworkInterface::set_router(int nw, Router *router)
 }
 
 // This gets called when a request was pending and the response is received
-void NetworkInterface::response(vp::Block *__this, vp::IoReq *req)
+void NetworkInterface::wide_response(vp::Block *__this, vp::IoReq *req)
 {
     NetworkInterface *_this = (NetworkInterface *)__this;
     _this->handle_response(req);
 }
 
+// This gets called after a request sent to a target was denied, and it is now granted
+void NetworkInterface::wide_grant(vp::Block *__this, vp::IoReq *req)
+{
+    NetworkInterface *_this = (NetworkInterface *)__this;
+    _this->grant(req);
+}
 
+// This gets called when a request was pending and the response is received
+void NetworkInterface::narrow_response(vp::Block *__this, vp::IoReq *req)
+{
+    NetworkInterface *_this = (NetworkInterface *)__this;
+    _this->handle_response(req);
+}
 
 // This gets called after a request sent to a target was denied, and it is now granted
-void NetworkInterface::grant(vp::Block *__this, vp::IoReq *req)
+void NetworkInterface::narrow_grant(vp::Block *__this, vp::IoReq *req)
 {
     NetworkInterface *_this = (NetworkInterface *)__this;
     _this->grant(req);
