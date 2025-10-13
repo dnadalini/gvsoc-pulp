@@ -257,6 +257,7 @@ NetworkInterface::NetworkInterface(FlooNoc *noc, int x, int y, std::string itf_n
                         &this->wide_input_itf, this);
 
     this->ni_outstanding_reqs = this->noc->get_js_config()->get("ni_outstanding_reqs")->get_int();
+<<<<<<< HEAD
 }
 
 void NetworkInterface::set_router(int nw, Router *router)
@@ -302,6 +303,8 @@ void NetworkInterface::narrow_grant(vp::Block *__this, vp::IoReq *req)
 {
     NetworkInterface *_this = (NetworkInterface *)__this;
     _this->grant(req);
+=======
+>>>>>>> ff81102 (floonoc: added back ni_outstanding_req and now takes into account target req latency)
 }
 
 void NetworkInterface::set_router(int nw, Router *router)
@@ -476,6 +479,11 @@ bool NetworkInterface::handle_request(FloonocNode *node, vp::IoReq *req, int fro
                 burst);
             this->nb_pending_bursts[wide]--;
 
+<<<<<<< HEAD
+=======
+            if (this->nb_pending_bursts[wide] < 0) abort();
+
+>>>>>>> ff81102 (floonoc: added back ni_outstanding_req and now takes into account target req latency)
             burst->get_resp_port()->resp(burst);
         }
         else
@@ -489,6 +497,10 @@ bool NetworkInterface::handle_request(FloonocNode *node, vp::IoReq *req, int fro
             {
                 this->trace.msg(vp::Trace::LEVEL_DEBUG, "Finished burst (burst: %p)\n", burst);
                 this->nb_pending_bursts[wide]--;
+<<<<<<< HEAD
+=======
+                if (this->nb_pending_bursts[wide] < 0) abort();
+>>>>>>> ff81102 (floonoc: added back ni_outstanding_req and now takes into account target req latency)
                 burst->get_resp_port()->resp(burst);
             }
         }
@@ -523,6 +535,7 @@ bool NetworkInterface::handle_request(FloonocNode *node, vp::IoReq *req, int fro
 
             if (result == vp::IO_REQ_OK)
             {
+<<<<<<< HEAD
                 if (req->get_latency() > 0)
                 {
                     this->response_queue.push_delayed(req, req->get_latency());
@@ -530,6 +543,16 @@ bool NetworkInterface::handle_request(FloonocNode *node, vp::IoReq *req, int fro
                 else
                 {
                     this->handle_response(req);
+=======
+                NetworkInterface *ni = *(NetworkInterface **)req->arg_get(FlooNoc::REQ_SRC_NI);
+                if (req->get_latency() > 0)
+                {
+                    this->response_queue.push_back(req, req->get_latency());
+                }
+                else
+                {
+                    ni->handle_response(req);
+>>>>>>> ff81102 (floonoc: added back ni_outstanding_req and now takes into account target req latency)
                 }
             }
             else if (result == vp::IO_REQ_DENIED)
