@@ -239,7 +239,8 @@ void FlooNoc::reset(bool active)
 
 
 
-Entry *FlooNoc::get_entry(uint64_t base, uint64_t size)
+//Entry *FlooNoc::get_entry(uint64_t base, uint64_t size)
+Entry *FlooNoc::get_entry(uint64_t base, uint64_t size, int x, int y)
 {
     // For now, we store mapping in a classic array.
     // Just go through each entry one by one, until one is matching the requested memory location
@@ -249,7 +250,14 @@ Entry *FlooNoc::get_entry(uint64_t base, uint64_t size)
         // We allow partial entry, the network interface will take care of splitting transactions
         if (base >= entry->base && base < entry->base + entry->size)
         {
-            return entry;
+            if (entry->x==0) {
+                if (entry->y==y) {
+                    //printf("[ZL-MOD] Spotted access to L2. Source NI is x=%d,y=%d. Destination NI is x=%d,y=%d\n",x,y,entry->x,entry->y);
+                    return entry;
+                }
+            }
+            else 
+                return entry;
         }
     }
     return NULL;
