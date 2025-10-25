@@ -62,7 +62,11 @@ class MagiaTileTcdm(gvsoc.systree.Component):
         banks = []
         for i in range(nb_banks):
             # Instantiate a new memory bank
+<<<<<<< HEAD
             bank = memory.Memory(self, f'bank_{i}', atomics=True, size=bank_size, latency=MagiaDSE.TILE_TCDM_LATENCY)
+=======
+            bank = memory.Memory(self, f'bank_{i}', atomics=True, size=bank_size, latency=0)
+>>>>>>> a916738 (Fixed TCDM Latency to fit original Ligth Redmule request constraints (1 Cycle for FSM + 0 Cycle for memory))
             banks.append(bank)
 
             # Bind the new bank (slave) to the interleaver (master)
