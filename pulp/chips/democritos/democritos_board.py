@@ -17,9 +17,9 @@
 import gvsoc.systree
 import gvsoc.runner
 
-from pulp.chips.archytas.archytas_soc import ArchytasSoc
+from pulp.chips.democritos.democritos_soc import DemocritosSoc
 
-class ArchytasBoard(gvsoc.systree.Component):
+class DemocritosBoard(gvsoc.systree.Component):
     def __init__(self, parent, name:str, parser, options):
         super().__init__(parent, name, options=options)
 
@@ -27,10 +27,10 @@ class ArchytasBoard(gvsoc.systree.Component):
         binary = args.binary
 
         # Soc model
-        soc = ArchytasSoc(self, 'archytas-soc', parser, binary)
+        soc = DemocritosSoc(self, 'democritos-soc', parser, binary)
 
 
 class Target(gvsoc.runner.Target):
     def __init__(self, parser, options):
         super(Target, self).__init__(parser, options,
-              model=ArchytasBoard, description="Archytas test board")
+              model=DemocritosBoard, description="Democritos test board")

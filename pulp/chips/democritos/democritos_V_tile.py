@@ -24,11 +24,11 @@ import pulp.cpu.iss.pulp_cores as iss
 from pulp.cluster.l1_interleaver import L1_interleaver
 from pulp.light_redmule.hwpe_interleaver import HWPEInterleaver
 from pulp.snitch.snitch_cluster.dma_interleaver import DmaInterleaver
-from pulp.chips.archytas.hierarchical_cache import Hierarchical_cache
+from pulp.chips.democritos.hierarchical_cache import Hierarchical_cache
 
-from pulp.chips.archytas.archytas_arch import ArchytasArch
-from pulp.chips.archytas.archytas_core import CV32CoreTest
-# TODO: add and use AIMC accelerator
+from pulp.chips.democritos.democritos_arch import DemocritosArch
+from pulp.chips.democritos.democritos_core import CV32CoreTest
+# TODO: add PULP cluster (plain, no accelerators)
 from pulp.idma.snitch_dma import SnitchDma
 from pulp.xif_decoder.xif_decoder import XifDecoder
 from pulp.magia_idma_ctrl.magia_idma_ctrl import Magia_iDMA_Ctrl
@@ -36,8 +36,8 @@ from pulp.magia_idma_ctrl.magia_idma_ctrl import Magia_iDMA_Ctrl
 
 # adapted from snitch cluster model
 # interface i_INPUT -> interleaver -> banks
-class Archytas_A_TileTcdm(gvsoc.systree.Component):
+class Democritos_V_TileTcdm(gvsoc.systree.Component):
     def __init__(self, parent, name, parser):
         super().__init__(parent, name)
 
-        # TODO: Build a tile like the fixed T and then map the AIMC module
+        # TODO: Build a tile like the fixed T and then map a PULP cluster (plain)
