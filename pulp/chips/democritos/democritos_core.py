@@ -16,10 +16,10 @@
 
 import gvsoc.systree
 import cpu.iss.riscv
-from pulp.chips.archytas.archytas_isa import *
+from pulp.chips.democritos.democritos_isa import *
 from cpu.iss.isa_gen.isa_smallfloats import *
 
-# Basic rv32 core
+# RV32 core with X-if
 class CV32CoreTest(cpu.iss.riscv.RiscvCommon):
     def __init__(self, parent: gvsoc.systree.Component, name: str, binaries: list=[],
                  fetch_enable: bool=False, boot_addr: int=0, timed: bool=True,

@@ -20,10 +20,10 @@ import vp.clock_domain
 import utils.loader.loader
 import interco.router as router
 
-from pulp.chips.archytas.archytas_T_tile import Archytas_T_Tile
-# from pulp.chips.archytas.archytas_A_tile import Archytas_A_Tile
-# from pulp.chips.archytas.archytas_V_tile import Archytas_V_Tile
-from pulp.chips.archytas.archytas_arch import ArchytasArch
+from pulp.chips.democritos.democritos_T_tile import Democritos_T_Tile
+# from pulp.chips.democritos.democritos_A_tile import Democritos_A_Tile
+# from pulp.chips.democritos.democritos_V_tile import Democritos_V_Tile
+from pulp.chips.democritos.democritos_arch import DemocritosArch
 from pulp.floonoc.floonoc import *
 from pulp.fractal_sync.fractal_sync import *
 from typing import List, Dict
@@ -47,7 +47,7 @@ def calculate_north_south(n, tiling):
     south = north + tiling
     return north, south
 
-class ArchytasSoc(gvsoc.systree.Component):
+class DemocritosSoc(gvsoc.systree.Component):
     def __init__(self, parent, name, parser, binary):
         super().__init__(parent, name)
 
@@ -55,20 +55,20 @@ class ArchytasSoc(gvsoc.systree.Component):
 
         # Single clock domain
         clock = vp.clock_domain.Clock_domain(self, 'tile-clock',
-                                             frequency=ArchytasArch.TILE_CLK_FREQ)
+                                             frequency=DemocritosArch.TILE_CLK_FREQ)
         clock.o_CLOCK(self.i_CLOCK())
 
         # TODO: Create a mechanism to create the tiles according to specifications
         #       This might be a collection of lists that are then indexed for the instantiation 
         # Create Tiles
-        cluster:List[Archytas_T_Tile] = []
-        for id in range(0,ArchytasArch.NB_CLUSTERS):
-            cluster.append(Archytas_T_Tile(self, f'archytas-T-tile-{id}', parser, id))
+        cluster:List[Democritos_T_Tile] = []
+        for id in range(0,DemocritosArch.NB_CLUSTERS):
+            cluster.append(Democritos_T_Tile(self, f'democritos-T-tile-{id}', parser, id))
 
         # L2 memory
         l2_mem:List[memory.Memory] = []
-        for id in range(0,ArchytasArch.N_TILES_Y):
-            l2_mem.append(memory.Memory(self, f'L2-mem-{id}', size=ArchytasArch.L2_SIZE // ArchytasArch.N_TILES_Y,latency=1))
+        for id in range(0,DemocritosArch.N_TILES_Y):
+            l2_mem.append(memory.Memory(self, f'L2-mem-{id}', size=DemocritosArch.L2_SIZE // DemocritosArch.N_TILES_Y,latency=1))
 
         # Create Tile matrix for IDs
         # --------------> X direction
@@ -81,11 +81,11 @@ class ArchytasSoc(gvsoc.systree.Component):
         # Y direction
 
         # Init matrix:
-        tile_matrix: List[List[int]] = [[0 for _ in range(ArchytasArch.N_TILES_X)] for _ in range(ArchytasArch.N_TILES_Y)]
+        tile_matrix: List[List[int]] = [[0 for _ in range(DemocritosArch.N_TILES_X)] for _ in range(DemocritosArch.N_TILES_Y)]
         # Populate matrix
         id=0
-        for y in range(0,ArchytasArch.N_TILES_Y):
-            for x in range(0,ArchytasArch.N_TILES_X):
+        for y in range(0,DemocritosArch.N_TILES_Y):
+            for x in range(0,DemocritosArch.N_TILES_X):
                 tile_matrix[y][x] = id
                 id = id +1
 
@@ -103,7 +103,7 @@ class ArchytasSoc(gvsoc.systree.Component):
         fsync_center_v: Dict[int, List[FractalSync]] = {} # center fsync used by v-tree
         # Place horizontal-vertical fsyncs
         lvl=0
-        for n_fractal in n_fract_per_lvl(ArchytasArch.NB_CLUSTERS):
+        for n_fractal in n_fract_per_lvl(DemocritosArch.NB_CLUSTERS):
             if lvl == 0:
                 print(f"Placing {n_fractal*2} fsync in h+v tree at level {lvl}")
                 for n in range(0,int(n_fractal/2)):
@@ -131,14 +131,14 @@ class ArchytasSoc(gvsoc.systree.Component):
 
         # Place neighbour fsyncs (here level is always 0) only for achitectures > 2x2
         n_fractal_neighbour=0
-        if ArchytasArch.NB_CLUSTERS >= 4:
-            n_fractal_neighbour=(((ArchytasArch.N_TILES_X)//2) - 1)*(ArchytasArch.N_TILES_Y)
+        if DemocritosArch.NB_CLUSTERS >= 4:
+            n_fractal_neighbour=(((DemocritosArch.N_TILES_X)//2) - 1)*(DemocritosArch.N_TILES_Y)
             print(f"Placing {n_fractal_neighbour*2} neighbour fsync at level 0")
             for n_fractal in range(0,n_fractal_neighbour):
                 fsync_neighbour_east_west.append(FractalSync(self,f'fsync_east_west_nb_id_{n_fractal}',level=0))
                 fsync_neighbour_nord_sud.append(FractalSync(self,f'fsync_nord_sud_nb_id_{n_fractal}',level=0))
 
-        if (ArchytasArch.ENABLE_NOC):
+        if (DemocritosArch.ENABLE_NOC):
             
             noc = FlooNoc2dMeshNarrowWide(self,
                                         name='magia-noc',
@@ -146,12 +146,12 @@ class ArchytasSoc(gvsoc.systree.Component):
                                         wide_width=4,
                                         ni_outstanding_reqs=8, #need to double check this with RTL
                                         router_input_queue_size=2, #need to double check this with RTL
-                                        dim_x=ArchytasArch.N_TILES_X+1, dim_y=ArchytasArch.N_TILES_Y)
+                                        dim_x=DemocritosArch.N_TILES_X+1, dim_y=DemocritosArch.N_TILES_Y)
             
 
             # Create noc routers
-            for x in range(0,ArchytasArch.N_TILES_X+1):
-                for y in range(0,ArchytasArch.N_TILES_Y):
+            for x in range(0,DemocritosArch.N_TILES_X+1):
+                for y in range(0,DemocritosArch.N_TILES_Y):
                     print(f"[NoC] Adding router and NI at position x={x} y={y}")
                     noc.add_router(x, y)
                     noc.add_network_interface(x, y)
@@ -171,11 +171,11 @@ class ArchytasSoc(gvsoc.systree.Component):
             #                           
 
             id = 0
-            for y in reversed(range(0,ArchytasArch.N_TILES_Y)):
-                for x in range(1,ArchytasArch.N_TILES_X+1):
+            for y in reversed(range(0,DemocritosArch.N_TILES_Y)):
+                for x in range(1,DemocritosArch.N_TILES_X+1):
                     print(f"[NoC] Adding cluster {id} at position x={x} y={y}")
                     cluster[id].o_NARROW_OUTPUT(noc.i_NARROW_INPUT(x,y))
-                    noc.o_NARROW_MAP(cluster[id].i_NARROW_INPUT(),name=f'tile-{id}-l1-mem',base=ArchytasArch.L1_ADDR_START+(id*ArchytasArch.L1_TILE_OFFSET),size=ArchytasArch.L1_SIZE,x=x,y=y,rm_base=False)
+                    noc.o_NARROW_MAP(cluster[id].i_NARROW_INPUT(),name=f'tile-{id}-l1-mem',base=DemocritosArch.L1_ADDR_START+(id*DemocritosArch.L1_TILE_OFFSET),size=DemocritosArch.L1_SIZE,x=x,y=y,rm_base=False)
                     id += 1
 
             # Bind memory to noc
@@ -193,28 +193,28 @@ class ArchytasSoc(gvsoc.systree.Component):
             #
 
             id = 0   
-            for y in reversed(range(0,ArchytasArch.N_TILES_Y)):
+            for y in reversed(range(0,DemocritosArch.N_TILES_Y)):
                 print(f"[NoC] Adding L2 {id} at position x={0} y={y}")
-                noc.o_NARROW_MAP(l2_mem[id].i_INPUT(),name=f'l2-map-{id}',base=ArchytasArch.L2_ADDR_START + id*(ArchytasArch.L2_SIZE // ArchytasArch.N_TILES_Y),size=ArchytasArch.L2_SIZE // ArchytasArch.N_TILES_Y,x=0,y=y,rm_base=True)
+                noc.o_NARROW_MAP(l2_mem[id].i_INPUT(),name=f'l2-map-{id}',base=DemocritosArch.L2_ADDR_START + id*(DemocritosArch.L2_SIZE // DemocritosArch.N_TILES_Y),size=DemocritosArch.L2_SIZE // DemocritosArch.N_TILES_Y,x=0,y=y,rm_base=True)
                 id=id+1
 
         else:
 
             soc_xbar = router.Router(self, f'soc-xbar',bandwidth=4,latency=2)
             
-            for id in range(0,ArchytasArch.NB_CLUSTERS):
+            for id in range(0,DemocritosArch.NB_CLUSTERS):
                 print(f"[G-XBAR] Adding cluster {id}")
                 cluster[id].o_NARROW_OUTPUT(soc_xbar.i_INPUT())
-                soc_xbar.o_MAP(cluster[id].i_NARROW_INPUT(),f'tile-{id}-l1-mem',base=ArchytasArch.L1_ADDR_START+(id*ArchytasArch.L1_TILE_OFFSET),size=ArchytasArch.L1_SIZE,rm_base=False)
+                soc_xbar.o_MAP(cluster[id].i_NARROW_INPUT(),f'tile-{id}-l1-mem',base=DemocritosArch.L1_ADDR_START+(id*DemocritosArch.L1_TILE_OFFSET),size=DemocritosArch.L1_SIZE,rm_base=False)
 
             id = 0   
-            for y in reversed(range(0,ArchytasArch.N_TILES_Y)):
+            for y in reversed(range(0,DemocritosArch.N_TILES_Y)):
                 print(f"[G-XBAR] Adding L2 {id} at position x={0} y={y}")
-                soc_xbar.o_MAP(l2_mem[id].i_INPUT(),name=f'l2-map-{id}',base=ArchytasArch.L2_ADDR_START + id*(ArchytasArch.L2_SIZE // ArchytasArch.N_TILES_Y),size=ArchytasArch.L2_SIZE // ArchytasArch.N_TILES_Y,rm_base=True)
+                soc_xbar.o_MAP(l2_mem[id].i_INPUT(),name=f'l2-map-{id}',base=DemocritosArch.L2_ADDR_START + id*(DemocritosArch.L2_SIZE // DemocritosArch.N_TILES_Y),size=DemocritosArch.L2_SIZE // DemocritosArch.N_TILES_Y,rm_base=True)
                 id=id+1
 
         # Fractal tree routing
-        for lvl in range(0,int(math.log2(ArchytasArch.NB_CLUSTERS))):
+        for lvl in range(0,int(math.log2(DemocritosArch.NB_CLUSTERS))):
             # level 0 is a special level connecting the tiles
             if lvl == 0:
                 print("Current level is ", lvl)
@@ -288,12 +288,12 @@ class ArchytasSoc(gvsoc.systree.Component):
                             print(f"Connection tile-id {id} to fsync_neighbour_nord_sud_{n} NORD INPUT port")
                             cluster[id].o_SLAVE_NORD_SUD_NEIGHBOUR_FRACTAL(fsync_neighbour_nord_sud[n].i_SLAVE_NORD())
                             fsync_neighbour_nord_sud[n].o_SLAVE_NORD(cluster[id].i_SLAVE_NORD_SUD_NEIGHBOUR_FRACTAL())
-                            print(f"Connection tile-id {id+ArchytasArch.N_TILES_X} to fsync_neighbour_nord_sud_{n} SUD INPUT port")
-                            cluster[id+ArchytasArch.N_TILES_X].o_SLAVE_NORD_SUD_NEIGHBOUR_FRACTAL(fsync_neighbour_nord_sud[n].i_SLAVE_SUD())
-                            fsync_neighbour_nord_sud[n].o_SLAVE_SUD(cluster[id+ArchytasArch.N_TILES_X].i_SLAVE_NORD_SUD_NEIGHBOUR_FRACTAL())
+                            print(f"Connection tile-id {id+DemocritosArch.N_TILES_X} to fsync_neighbour_nord_sud_{n} SUD INPUT port")
+                            cluster[id+DemocritosArch.N_TILES_X].o_SLAVE_NORD_SUD_NEIGHBOUR_FRACTAL(fsync_neighbour_nord_sud[n].i_SLAVE_SUD())
+                            fsync_neighbour_nord_sud[n].o_SLAVE_SUD(cluster[id+DemocritosArch.N_TILES_X].i_SLAVE_NORD_SUD_NEIGHBOUR_FRACTAL())
                             n=n+1
     
-            elif (lvl == 1) and (lvl<(int(math.log2(ArchytasArch.NB_CLUSTERS))-1)): #this is another special level as from now on we leave the nord-sud naming and we move to a more abstract form
+            elif (lvl == 1) and (lvl<(int(math.log2(DemocritosArch.NB_CLUSTERS))-1)): #this is another special level as from now on we leave the nord-sud naming and we move to a more abstract form
                 print("Current level is ", lvl)
                 # note. Center fsync on odd levels host also the vertical tree
                 for n in range(0,len(fsync_center_hv[lvl])):
@@ -313,7 +313,7 @@ class ArchytasSoc(gvsoc.systree.Component):
                     fsync_east[n].o_MASTER_EAST_WEST(fsync_center_hv[lvl][n].i_SLAVE_EAST())
                     fsync_center_hv[lvl][n].o_SLAVE_EAST(fsync_east[n].i_MASTER_EAST_WEST())
             
-            elif (lvl > 1) and (lvl<(int(math.log2(ArchytasArch.NB_CLUSTERS))-1)): # intermediate levels
+            elif (lvl > 1) and (lvl<(int(math.log2(DemocritosArch.NB_CLUSTERS))-1)): # intermediate levels
                 print("Current level is ", lvl)
                 if lvl % 2 == 0: #fractal in even levels are not shared between H-tree and V-tree and use EAST WEST ports (H-tree) and NORD SUD ports (V-tree)
                     n_prev=0
@@ -398,7 +398,7 @@ class ArchytasSoc(gvsoc.systree.Component):
                     fsync_root.o_SLAVE_EAST(fsync_center_v[lvl-1][1].i_MASTER_EAST_WEST())
 
         # Bind loader
-        for id in range(0,ArchytasArch.NB_CLUSTERS):
+        for id in range(0,DemocritosArch.NB_CLUSTERS):
             if (id == 0):
                 loader.o_OUT(cluster[id].i_LOADER()) #only cluster connected to the corner loads the elf
             loader.o_START(cluster[id].i_FETCHEN())

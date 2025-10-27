@@ -14,12 +14,15 @@
 # limitations under the License.
 #
 
-class ArchytasArch:
+class DemocritosArch:
     # Single tile address map from magia_tile_pkg.sv
     RESERVED_ADDR_START = 0x0000_0000
-    RESERVED_SIZE       = 0x0000_FFFF
+    RESERVED_SIZE       = 0x0000_FFFF - 0x0000_00E0
     RESERVED_ADDR_END   = RESERVED_ADDR_START + RESERVED_SIZE
-    STACK_ADDR_START    = RESERVED_ADDR_END + 1
+    PCM_START           = RESERVED_ADDR_END + 1
+    PCM_SIZE            = 0x0000_00E0
+    PCM_END             = 0x0000_FFFF
+    STACK_ADDR_START    = PCM_END + 1
     STACK_SIZE          = 0x0000_FFFF
     STACK_ADDR_END      = STACK_ADDR_START + STACK_SIZE
     L1_ADDR_START       = STACK_ADDR_END + 1
