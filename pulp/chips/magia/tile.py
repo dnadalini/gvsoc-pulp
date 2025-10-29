@@ -37,7 +37,6 @@ from pulp.chips.magia.idma_ctrl.idma_ctrl import Magia_iDMA_Ctrl
 
 
 
-
 # adapted from snitch cluster model
 # interface i_INPUT -> interleaver -> banks
 class MagiaTileTcdm(gvsoc.systree.Component):
