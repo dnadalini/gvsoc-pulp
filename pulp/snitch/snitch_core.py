@@ -19,6 +19,7 @@ from pulp.snitch.snitch_isa import *
 import cpu.iss.isa_gen.isa_rvv
 import cpu.iss.isa_gen.isa_rvv_timed
 from cpu.iss.isa_gen.isa_smallfloats import *
+from cpu.iss.isa_gen.isa_pulpv2 import *
 import gvsoc.systree
 import os
 import pulp.ara.ara
@@ -34,8 +35,9 @@ def add_latencies(isa, is_fast=False, use_spatz=False):
         isa.get_insn('fsh').set_exec_label('fsh_snitch')
         isa.get_insn('flw').set_exec_label('flw_snitch')
         isa.get_insn('fsw').set_exec_label('fsw_snitch')
-        isa.get_insn('fld').set_exec_label('fld_snitch')
-        isa.get_insn('fsd').set_exec_label('fsd_snitch')
+        if isa.get_insn('fld') is not None:
+            isa.get_insn('fld').set_exec_label('fld_snitch')
+            isa.get_insn('fsd').set_exec_label('fsd_snitch')
 
     # To model the fact that alt fp16 and fp18 instructions are dynamically enabled through a
     # CSR, we insert a stub which call the proper handler depending on the CSR value
@@ -109,13 +111,21 @@ class Snitch(cpu.iss.riscv.RiscvCommon):
             boot_addr: int=0,
             inc_spatz: bool=False,
             core_id: int=0,
-            htif: bool=False):
+            htif: bool=False,
+            pulp_v2: bool=False,
+            nb_outstanding: int=1):
 
         isa_instance = isa_instances.get(isa)
 
         if isa_instances.get(isa) is None:
+
+            if pulp_v2:
+                extensions = [ PulpV2(hwloop=False, elw=False), Xf16(), Xf16alt(), Xf8(), XfvecSnitch(), Xfaux() ]
+            else:
+                extensions = [ Rv32ssr(), Rv32frep(), Xdma(), Xf16(), Xf16alt(), Xf8(), XfvecSnitch(), Xfaux() ]
+
             isa_instance = cpu.iss.isa_gen.isa_riscv_gen.RiscvIsa("snitch_" + isa, isa,
-                extensions=[ Rv32ssr(), Rv32frep(), Xdma(), Xf16(), Xf16alt(), Xf8(), XfvecSnitch(), Xfaux() ] )
+                no_hash=True, extensions=extensions)
             add_latencies(isa_instance)
             isa_instances[isa] = isa_instance
 
@@ -124,7 +134,11 @@ class Snitch(cpu.iss.riscv.RiscvCommon):
 
         super().__init__(parent, name, isa=isa_instance, misa=misa, core="snitch", scoreboard=True,
             fetch_enable=fetch_enable, boot_addr=boot_addr, core_id=core_id, riscv_exceptions=True,
-            prefetcher_size=32, custom_sources=True, htif=htif, binaries=binaries)
+            prefetcher_size=32, custom_sources=True, htif=htif, binaries=binaries,
+            nb_outstanding=nb_outstanding)
+
+        if pulp_v2:
+            self.add_c_flags([f'-DCONFIG_GVSOC_ISS_SNITCH_PULP_V2=1'])
 
         self.add_c_flags([
             "-DPIPELINE_STAGES=1",
@@ -151,8 +165,6 @@ class Snitch(cpu.iss.riscv.RiscvCommon):
             "cpu/iss/src/syscalls.cpp",
             "cpu/iss/src/memcheck.cpp",
             "cpu/iss/src/htif.cpp",
-            "cpu/iss/src/mmu.cpp",
-            "cpu/iss/src/pmp.cpp",
             "cpu/iss/src/gdbserver.cpp",
             "cpu/iss/src/dbg_unit.cpp",
             "cpu/iss/flexfloat/flexfloat.c",
@@ -179,17 +191,24 @@ class SnitchFast(cpu.iss.riscv.RiscvCommon):
             boot_addr: int=0,
             inc_spatz: bool=False,
             core_id: int=0,
-            htif: bool=False, vlen: int=512, spatz_nb_lanes=4):
-
+            htif: bool=False, vlen: int=512, spatz_nb_lanes=4,
+            pulp_v2: bool=False,
+            nb_outstanding: int=1,
+            wakeup_counter: bool=False,
+            vector_chaining: bool=False
+        ):
 
         isa_instance = isa_instances.get(isa)
 
         if isa_instances.get(isa) is None:
 
-            extensions = [Xdma(), Xf16(), Xf16alt(), Xf8(), XfvecSnitch(), Xfaux()]
+            if pulp_v2:
+                extensions = [ PulpV2(hwloop=False, elw=False), Xf16(), Xf16alt(), Xf8(), XfvecSnitch(), Xfaux() ]
+            else:
+                extensions = [ Xdma(), Xf16(), Xf16alt(), Xf8(), XfvecSnitch(), Xfaux() ]
 
-            if not inc_spatz:
-                extensions += [Rv32ssr(), Rv32frep()]
+                if not inc_spatz:
+                    extensions += [Rv32ssr(), Rv32frep()]
 
             isa_instance = cpu.iss.isa_gen.isa_riscv_gen.RiscvIsa("snitch_" + isa, isa,
                 extensions=extensions)
@@ -204,9 +223,16 @@ class SnitchFast(cpu.iss.riscv.RiscvCommon):
 
         super().__init__(parent, name, isa=isa_instance, misa=misa, core="snitch", scoreboard=True,
             fetch_enable=fetch_enable, boot_addr=boot_addr, core_id=core_id, riscv_exceptions=True,
-            prefetcher_size=32, htif=htif, binaries=binaries, handle_misaligned=True, custom_sources=True)
+            prefetcher_size=32, htif=htif, binaries=binaries, handle_misaligned=True, custom_sources=True,
+            nb_outstanding=nb_outstanding, vector_chaining=vector_chaining)
 
         self.inc_spatz = inc_spatz
+
+        if pulp_v2:
+            self.add_c_flags([f'-DCONFIG_GVSOC_ISS_SNITCH_PULP_V2=1'])
+
+        if wakeup_counter:
+            self.add_c_flags([f'-DCONFIG_GVSOC_ISS_EXEC_WAKEUP_COUNTER=1'])
 
         self.add_c_flags([
             "-DPIPELINE_STAGES=1",
@@ -248,8 +274,6 @@ class SnitchFast(cpu.iss.riscv.RiscvCommon):
             "cpu/iss/src/syscalls.cpp",
             "cpu/iss/src/htif.cpp",
             "cpu/iss/src/memcheck.cpp",
-            "cpu/iss/src/mmu.cpp",
-            "cpu/iss/src/pmp.cpp",
             "cpu/iss/src/gdbserver.cpp",
             "cpu/iss/src/dbg_unit.cpp",
             "cpu/iss/flexfloat/flexfloat.c",
@@ -286,6 +310,39 @@ class SnitchFast(cpu.iss.riscv.RiscvCommon):
         else:
             raise RuntimeError('Vector data interface is not available')
 
+    def gen_gui(self, parent_signal):
+        active = super().gen_gui(parent_signal)
+
+        if self.inc_spatz:
+            ara = gvsoc.gui.Signal(self, active, name='ara', path='ara/label', groups=['regmap'], display=gvsoc.gui.DisplayStringBox())
+
+            gvsoc.gui.Signal(self, ara, name="queue", path="ara/queue", groups=['regmap'])
+            gvsoc.gui.Signal(self, ara, name="pc", path="ara/pc", groups=['regmap'])
+            gvsoc.gui.Signal(self, ara, name="active", path="ara/active",
+                display=gvsoc.gui.DisplayPulse(), groups=['regmap'])
+            gvsoc.gui.Signal(self, ara, name="queue_full", path="ara/queue_full",
+                display=gvsoc.gui.DisplayPulse(), groups=['regmap'])
+            gvsoc.gui.Signal(self, ara, name="pending_insn", path="ara/nb_pending_insn", groups=['regmap'])
+            gvsoc.gui.Signal(self, ara, name="waiting_insn", path="ara/nb_waiting_insn", groups=['regmap'])
+
+            vlsu = gvsoc.gui.Signal(self, ara, name='vlsu', path='ara/vlsu/label', groups=['regmap'], display=gvsoc.gui.DisplayStringBox())
+            gvsoc.gui.Signal(self, vlsu, name="active", path="ara/vlsu/active", display=gvsoc.gui.DisplayPulse(), groups=['regmap'])
+            gvsoc.gui.Signal(self, vlsu, name="queue", path="ara/vlsu/queue", groups=['regmap'])
+            gvsoc.gui.Signal(self, vlsu, name="pc", path="ara/vlsu/pc", groups=['regmap'])
+            gvsoc.gui.Signal(self, vlsu, name="pending_insn", path="ara/vlsu/nb_pending_insn", groups=['regmap'])
+            for i in range(0, self.get_property('ara/nb_ports', int)):
+                port = gvsoc.gui.Signal(self, vlsu, name=f"port_{i}", path=f"ara/vlsu/port_{i}/addr", groups=['regmap'])
+                gvsoc.gui.Signal(self, port, name="size", path=f"ara/vlsu/port_{i}/size", groups=['regmap'])
+                gvsoc.gui.Signal(self, port, name="is_write", path=f"ara/vlsu/port_{i}/is_write", display=gvsoc.gui.DisplayPulse(), groups=['regmap'])
+
+            vfpu = gvsoc.gui.Signal(self, ara, name='vfpu', path='ara/vfpu/label', groups=['regmap'], display=gvsoc.gui.DisplayStringBox())
+            gvsoc.gui.Signal(self, vfpu, name="active", path="ara/vfpu/active", display=gvsoc.gui.DisplayPulse(), groups=['regmap'])
+            gvsoc.gui.Signal(self, vfpu, name="pc", path="ara/vfpu/pc", groups=['regmap'])
+
+            vslide = gvsoc.gui.Signal(self, ara, name='vslide', path='ara/vslide/label', groups=['regmap'], display=gvsoc.gui.DisplayStringBox())
+            gvsoc.gui.Signal(self, vslide, name="active", path="ara/vslide/active", display=gvsoc.gui.DisplayPulse(), groups=['regmap'])
+            gvsoc.gui.Signal(self, vslide, name="pc", path="ara/vslide/pc", groups=['regmap'])
+
 
 class SnitchBare(cpu.iss.riscv.RiscvCommon):
 
@@ -299,7 +356,6 @@ class SnitchBare(cpu.iss.riscv.RiscvCommon):
             boot_addr: int=0,
             inc_spatz: bool=False,
             core_id: int=0):
-
 
         isa_instance = cpu.iss.isa_gen.isa_riscv_gen.RiscvIsa("snitch_" + isa, isa,
             extensions=[ Xdma() ] )
@@ -341,13 +397,21 @@ class Snitch_fp_ss(cpu.iss.riscv.RiscvCommon):
             inc_spatz: bool=False,
             core_id: int=0,
             timed: bool=False,
-            htif: bool=False):
+            htif: bool=False,
+            pulp_v2: bool=False):
 
+        isa_instance = isa_instances.get(isa)
 
-        isa_instance = cpu.iss.isa_gen.isa_riscv_gen.RiscvIsa("snitch_fp_ss_" + isa, isa,
-            extensions=[ Rv32ssr(), Rv32frep(), Xdma(), Xf16(), Xf16alt(), Xf8(), XfvecSnitch(), Xfaux() ] )
+        if isa_instances.get(isa) is None:
+            if pulp_v2:
+                extensions = [ PulpV2(hwloop=False, elw=False), Xf16(), Xf16alt(), Xf8(), XfvecSnitch(), Xfaux() ]
+            else:
+                extensions = [ Rv32ssr(), Rv32frep(), Xdma(), Xf16(), Xf16alt(), Xf8(), XfvecSnitch(), Xfaux() ]
 
-        add_latencies(isa_instance)
+            isa_instance = cpu.iss.isa_gen.isa_riscv_gen.RiscvIsa("snitch_fp_ss_" + isa, isa,
+                extensions=extensions )
+            add_latencies(isa_instance)
+            isa_instances[isa] = isa_instance
 
         if misa is None:
             misa = isa_instance.misa
@@ -355,6 +419,9 @@ class Snitch_fp_ss(cpu.iss.riscv.RiscvCommon):
         super().__init__(parent, name, isa=isa_instance, misa=misa, core="snitch", scoreboard=True,
             fetch_enable=fetch_enable, boot_addr=boot_addr, core_id=core_id, riscv_exceptions=True,
             prefetcher_size=32, timed=timed, custom_sources=True, htif=htif)
+
+        if pulp_v2:
+            self.add_c_flags([f'-DCONFIG_GVSOC_ISS_SNITCH_PULP_V2=1'])
 
         self.add_c_flags([
             "-DCONFIG_ISS_CORE=snitch_fp_ss",
@@ -379,8 +446,6 @@ class Snitch_fp_ss(cpu.iss.riscv.RiscvCommon):
             "cpu/iss/src/syscalls.cpp",
             "cpu/iss/src/memcheck.cpp",
             "cpu/iss/src/htif.cpp",
-            "cpu/iss/src/mmu.cpp",
-            "cpu/iss/src/pmp.cpp",
             "cpu/iss/src/gdbserver.cpp",
             "cpu/iss/src/dbg_unit.cpp",
             "cpu/iss/flexfloat/flexfloat.c",

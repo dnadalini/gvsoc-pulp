@@ -12,4 +12,3 @@ typedef float dst_fmt_t;
 #define ARRAY_WIDTH  (PIPE_REGS * ARRAY_HEIGHT)
 
 #define DATA_WIDTH 256
-

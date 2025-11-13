@@ -3,10 +3,6 @@
 #include <stdio.h>
 #include <memory.h>
 
-// RedMule::RedMule(js::Config *config) : vp::Component(config) {
-// 
-// }
-
 RedMule::RedMule(vp::ComponentConf &config) : vp::Component(config) {
 	this->traces.new_trace("trace", &this->trace, vp::DEBUG);
 
@@ -96,38 +92,6 @@ vp::IoReqStatus RedMule::hwpe_slave(vp::Block *__this, vp::IoReq *req) {
     return vp::IO_REQ_OK;
 }
 
-/*
-int RedMule::build() {
-	this->traces.new_trace("trace", &this->trace, vp::DEBUG);
-
-	this->new_master_port("out", &this->out);
-
-	this->new_master_port("irq", &this->irq);
-	
-	this->in.set_req_meth(&RedMule::hwpe_slave);
-    this->new_slave_port("input", &this->in);
-
-	this->w_stream = RedMule_Streamer(this, false);
-	this->x_stream = RedMule_Streamer(this, false);
-	this->y_stream = RedMule_Streamer(this, false);
-	this->z_stream = RedMule_Streamer(this, true);
-
-	this->buffers = RedMule_Buffers(this);
-
-	//Event Handlers
-    this->fsm_start_event = this->event_new(&RedMule::fsm_start_handler);
-    this->fsm_event = this->event_new(&RedMule::fsm_handler);
-    this->fsm_end_event = this->event_new(&RedMule::fsm_end_handler);
-
-	this->state.set(IDLE);
-
-	this->trace.msg("Build complete\n");
-
-	return 0;
-}
-*/
-
-// extern "C" vp::Component *vp_constructor(js::Config *config) {
 extern "C" vp::Component *gv_new(vp::ComponentConf &config) {
     return new RedMule(config);
 }

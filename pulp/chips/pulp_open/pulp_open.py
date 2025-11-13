@@ -15,17 +15,24 @@
 #
 
 import gvsoc.systree as st
-from pulp.chips.pulp_open.soc import Soc
+from pulp.chips.pulp_open.soc import Soc, SocAttr
 from pulp.chips.pulp_open.cluster import Cluster, get_cluster_name
 from vp.clock_domain import Clock_domain
 from utils.clock_generator import Clock_generator
 from pulp.padframe.padframe_v1 import Padframe
 import interco.router_proxy as router_proxy
 import memory.dramsys
+from gvrun.attribute import Tree, Area, Value
+
+class PulpOpenAttr(Tree):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.soc = SocAttr(self, 'soc')
+
 
 class Pulp_open(st.Component):
 
-    def __init__(self, parent, name, parser, soc_config_file='pulp/chips/pulp_open/soc.json',
+    def __init__(self, parent, name, attr: PulpOpenAttr, parser, soc_config_file='pulp/chips/pulp_open/soc.json',
             cluster_config_file='pulp/chips/pulp_open/cluster.json', padframe_config_file='pulp/chips/pulp_open/padframe.json',
             use_ddr=False):
         super(Pulp_open, self).__init__(parent, name)
@@ -38,7 +45,7 @@ class Pulp_open(st.Component):
         cluster_config_file = self.add_property('cluster_config_file', cluster_config_file)
         nb_cluster = self.add_property('nb_cluster', 1)
 
-    
+
         #
         # Components
         #
@@ -62,7 +69,7 @@ class Pulp_open(st.Component):
             clusters.append(Cluster(self, cluster_name, config_file=cluster_config_file, cid=cid))
 
         # Soc
-        soc = Soc(self, 'soc', parser, config_file=soc_config_file, chip=self, cluster=clusters[0])
+        soc = Soc(self, 'soc', attr.soc, parser, config_file=soc_config_file, chip=self, cluster=clusters[0])
 
         # Fast clock
         fast_clock = Clock_domain(self, 'fast_clock', frequency=24576063*2)
@@ -134,7 +141,7 @@ class Pulp_open(st.Component):
             cluster = clusters[cid]
             self.bind(ref_clock_generator, 'clock_sync', cluster, 'ref_clock')
             self.bind(cluster, 'dma_irq', soc, 'dma_irq')
-            for pe in range(0, clusters[0].get_property('nb_pe', int)):
+            for pe in range(0, clusters[0].conf.get_property('nb_pe', int)):
                 self.bind(soc, 'halt_cluster%d_pe%d' % (cid, pe), cluster, 'halt_pe%d' % pe)
 
             self.bind(cluster_clocks[cid], 'out', clusters[cid], 'clock')
