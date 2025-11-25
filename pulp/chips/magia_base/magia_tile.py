@@ -97,14 +97,14 @@ class MagiaTile(gvsoc.systree.Component):
         core_cv32 = CV32CoreTest(self, f'tile-{tid}-cv32-core',core_id=tid)
 
         # Instruction cache (from snitch cluster model)
-        i_cache = Hierarchical_cache(self, f'tile-{tid}-icache', nb_cores=1, has_cc=0, l1_line_size_bits=7)
+        i_cache = Hierarchical_cache(self, f'tile-{tid}-icache', nb_cores=1, has_cc=0, l1_line_size_bits=4)
 
         # Data scratchpad
         l1_tcdm = MagiaTileTcdm(self, f'tile-{tid}-tcdm', parser)
 
         # Temporary test interconnects (use obi to access TCDM), to be refined later
         tile_xbar = router.Router(self, f'tile-{tid}-tile-xbar',bandwidth=4,latency=2)
-        obi_xbar = router.Router(self, f'tile-{tid}-obi-xbar',bandwidth=4,latency=0)
+        obi_xbar = router.Router(self, f'tile-{tid}-obi-xbar',bandwidth=4,latency=2)
 
         # IDMA Controller
         idma_ctrl= Magia_iDMA_Ctrl(self,f'tile-{tid}-idma-ctrl')
