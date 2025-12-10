@@ -22,7 +22,7 @@ from pulp.event_unit.event_unit_v3 import Event_unit
 from interco.router import Router
 from pulp.mchan.mchan_v7 import Mchan
 from pulp.timer.timer_v2 import Timer
-from pulp.cluster.cluster_control_v2 import Cluster_control
+from pulp.cluster.cluster_control_v3 import Cluster_control
 from pulp.ne16.ne16 import Ne16
 from pulp.icache_ctrl.icache_ctrl_v2 import Icache_ctrl
 
